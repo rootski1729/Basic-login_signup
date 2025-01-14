@@ -15,31 +15,33 @@ def Signup_view(request):
     if request.method == 'POST':
         form = signupform(request.POST, request.FILES)
         if form.is_valid():
-            try:
-                form.save()
-                return redirect('login')
-            except Exception as e:
-                return render(request, 'accounts/signup.html', {'form': form, 'errors': "something went wrong"})
-        else:
-            return render(request, 'accounts/signup.html', {'form': form, 'errors': form.errors})
-    return render(request, 'accounts/signup.html', {'form': signupform()})
-
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data.get('password'))
+            user.save()
+            messages.success(request, 'user created successfully')
+            return redirect('login')
+    else:
+        form = signupform()
+    return render(request, 'accounts/signup.html',{'form':form})      
 
 @csrf_protect
 def login_view(request):
     if request.method== 'POST':
         username=request.POST.get('username')
         password= request.POST.get('password')
-        user = CustomUser.objects.filter(username=username, password=password)
+        user = CustomUser.objects.filter(username=username)
+        
         if user.exists():
-            user = CustomUser.objects.get(username=username, password=password)
-            login(request, user)
-            messages.success(request, f"welcome our customer {user.first_name}")
-            if user.user_type == 'patient':
-                return redirect('patient_dashboard')
-            elif user.user_type == 'doctor':
-                return redirect('doctor_dashboard')
-            
+            user = CustomUser.objects.get(username=username)
+            if user.check_password(password):
+                login(request, user)
+                messages.success(request, f"welcome our customer {user.first_name}")
+                if user.user_type == 'patient':
+                    return redirect('patient_dashboard')
+                elif user.user_type == 'doctor':
+                    return redirect('doctor_dashboard')
+            else:
+                messages.error(request, "username or password incorrect")    
         else:
             messages.error(request, "username or password incorrect") 
     return render(request, 'accounts/login.html')

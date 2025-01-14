@@ -35,15 +35,15 @@ class signupform(forms.ModelForm):
         model = CustomUser
         fields = ['username', 'email', 'password', 'confirm_password', 'user_type', 'profile_pic', 'address_line1', 'city', 'state', 'pincode']
         
-        def clean(self):
-            cleaned_data = super().clean()
-            password = cleaned_data.get('password')
-            confirm_password = cleaned_data.get('confirm_password')
-            
-            if password != confirm_password:
-                raise forms.ValidationError('password should match')
-            
-            return cleaned_data
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get('password')
+        confirm_password = cleaned_data.get('confirm_password')
+        
+        if password != confirm_password:
+            raise forms.ValidationError('password should match')
+        
+        return cleaned_data
 class userserializer(serializers.ModelSerializer):
     class Meta:
         model=CustomUser
