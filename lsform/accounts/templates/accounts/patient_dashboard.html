@@ -6,3 +6,8 @@
   <li>Email: {{ user.email }}</li>
   <li>Address: {{ user.address_line1 }}, {{ user.city }}, {{ user.state }}, {{ user.pincode }}</li>
 </ul>
+
+<form action="{% url 'logout' %}" method="post">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-danger">Logout</button>
+</form>

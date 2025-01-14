@@ -1,42 +1,57 @@
 
 from django.shortcuts import render,redirect
-from rest_framework.response import Response
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_protect
 from .models import CustomUser
 from .serializers import *
-from rest_framework import status
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import login
+from django.contrib import messages
+from django.contrib.auth import logout
 # Create your views here.
 
+    
 @csrf_protect
 def Signup_view(request):
     if request.method == 'POST':
-        serializer= signupserializer(data=request.POST)
-        if serializer.is_valid():
-            serializer.save()
-            return redirect('login')
+        form = signupform(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                form.save()
+                return redirect('login')
+            except Exception as e:
+                return render(request, 'accounts/signup.html', {'form': form, 'errors': "something went wrong"})
         else:
-            return render(request, 'accounts/signup.html', {'serializer': serializer, 'errors': serializer.errors})
-    return render(request, 'accounts/signup.html')
+            return render(request, 'accounts/signup.html', {'form': form, 'errors': form.errors})
+    return render(request, 'accounts/signup.html', {'form': signupform()})
+
 
 @csrf_protect
 def login_view(request):
     if request.method== 'POST':
         username=request.POST.get('username')
         password= request.POST.get('password')
-        
-        user = authenticate(request,username=username, password=password)
-        if hasattr(user, 'user_type'):
+        user = CustomUser.objects.filter(username=username, password=password)
+        if user.exists():
+            user = CustomUser.objects.get(username=username, password=password)
             login(request, user)
+            messages.success(request, f"welcome our customer {user.first_name}")
             if user.user_type == 'patient':
                 return redirect('patient_dashboard')
-            
-            elif user.user_type=='doctor':
+            elif user.user_type == 'doctor':
                 return redirect('doctor_dashboard')
             
-        return render(request, 'accounts/login.html', {'error':'Invalid credentials'})
+        else:
+            messages.error(request, "username or password incorrect") 
     return render(request, 'accounts/login.html')
+
+
+
+
+def logout_view(request):
+    logout(request)
+    messages.success(request, 'logged out successfully')
+    return redirect('login')  
+
 
 @login_required(login_url='login')
 def patientdashboard_view(request):
