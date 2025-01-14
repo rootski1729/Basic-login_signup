@@ -2,8 +2,10 @@ from django.urls import path
 from .views import *
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic import RedirectView
 
 urlpatterns = [
+    path('', RedirectView.as_view(url='/login/', permanent=False)),
     path('signup/',Signup_view,name='signup'),
     path('login/', login_view,name='login'),
     path('logout/', logout_view, name='logout'), 
