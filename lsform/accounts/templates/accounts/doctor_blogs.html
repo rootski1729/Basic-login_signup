@@ -1,6 +1,24 @@
 <h1>Your Blogs</h1>
-<ul>
-    {% for blog in blogs %}
-    <li>{{ blog.title }} - {{ blog.get_status_display }}</li>
-    {% endfor %}
-</ul>
+
+{% for blog in blogs %}
+    <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 15px;">
+        <h2>{{ blog.title }}</h2>
+        {% if blog.image %}
+            <img src="{{ blog.image.url }}" alt="{{ blog.title }}" style="max-width: 300px; display: block; margin-bottom: 10px;">
+        {% endif %}
+        <p><strong>Category:</strong> {{ blog.category.name }}</p>
+        <p><strong>Summary:</strong> {{ blog.summary }}</p>
+        <p><strong>Content:</strong> {{ blog.content|truncatewords:50 }}</p>
+        <p><strong>Status:</strong> {{ blog.get_status_display }}</p>
+        <p><strong>Created At:</strong> {{ blog.created_at|date:"F j, Y, g:i a" }}</p>
+        <p><strong>Last Updated:</strong> {{ blog.updated_at|date:"F j, Y, g:i a" }}</p>
+
+        <a href="{% url 'create_blog' %}">
+            <button>Create New Blog</button>
+        </a>
+        <a href="{% url 'doctor_dashboard' %}">
+            <button>go to dashboard</button>
+
+        s
+    </div>
+{% endfor %}

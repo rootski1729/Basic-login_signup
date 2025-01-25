@@ -83,7 +83,7 @@ def create_blog_view(request):
             blog.author = request.user
             blog.save()
             messages.success(request, 'blog created successfully')
-            return redirect('doctor_blogs')
+            return redirect('doctors_blog')
     else:
         form = Blogpostform()
     
@@ -103,6 +103,7 @@ def patient_blogs_view(request):
         messages.error(request, 'Access denied')
         return redirect('login')
     
-    categories = blogcategory.objects.all()
-    blogs= Blogpost.objects.filter(status='published')
-    return render(request, 'accounts/patient_blogs.html',{'blogs':blogs,'categories':categories})
+    categories = Blogcategory.objects.all()
+    blogs_by_category = {category: Blogpost.objects.filter(category=category, status='published') for category in categories}
+
+    return render(request, 'accounts/patient_blogs.html', {'blogs_by_category': blogs_by_category})

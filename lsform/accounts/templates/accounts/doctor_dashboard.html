@@ -19,3 +19,9 @@
   {% csrf_token %}
   <button type="submit" class="btn btn-danger">Logout</button>
 </form>
+
+<a href="{% url 'create_blog' %}">
+  <button>Create New Blog</button>
+</a>
+<a href="{% url 'doctors_blog' %}">
+  <button>View My Blogs</button>
