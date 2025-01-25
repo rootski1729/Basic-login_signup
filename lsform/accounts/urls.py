@@ -11,7 +11,11 @@ urlpatterns = [
     path('logout/', logout_view, name='logout'), 
     path('patient_dashboard/',patientdashboard_view, name='patient_dashboard'),
     path('doctor_dashboard/', doctordashboard_view,name='doctor_dashboard'),
+    path('create_blog/', create_blog_view,name='create_blog'),
+    path('doctors_blog/', doctor_blogs_view,name='doctors_blog'),
+    path('patient_blog/', patient_blogs_view,name='patient_blog'),
 ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    

@@ -2,11 +2,12 @@
 from django.shortcuts import render,redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_protect
-from .models import CustomUser
+from .models import *
 from .serializers import *
 from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth import logout
+from .forms import *
 # Create your views here.
 
     
@@ -68,3 +69,40 @@ def doctordashboard_view(request):
     if getattr(request.user, 'user_type') != 'doctor':
         return redirect('login')
     return render(request, 'accounts/doctor_dashboard.html',{'user':request.user})
+
+@login_required(login_url='login')
+def create_blog_view(request):
+    if request.user.user_type != 'doctor':
+        messages.error(request, 'only doctor can create blog')
+        return redirect('patient_dashboard')
+    
+    if request.method == 'POST':
+        form = Blogpostform(request.POST, request.FILES)
+        if form.is_valid():
+            blog = form.save(commit=False)
+            blog.author = request.user
+            blog.save()
+            messages.success(request, 'blog created successfully')
+            return redirect('doctor_blogs')
+    else:
+        form = Blogpostform()
+    
+    return render(request, 'accounts/create_blog.html',{'form':form})
+
+@login_required(login_url='login')
+def doctor_blogs_view(request):
+    if request.user.user_type != 'doctor':
+        messages.error(request, 'Access denied')
+        return redirect('login')
+    blogs = Blogpost.objects.filter(author=request.user)
+    return render(request, 'accounts/doctor_blogs.html',{'blogs':blogs})
+
+@login_required(login_url='login')
+def patient_blogs_view(request):
+    if request.user.user_type != 'patient':
+        messages.error(request, 'Access denied')
+        return redirect('login')
+    
+    categories = blogcategory.objects.all()
+    blogs= Blogpost.objects.filter(status='published')
+    return render(request, 'accounts/patient_blogs.html',{'blogs':blogs,'categories':categories})

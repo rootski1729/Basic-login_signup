@@ -1,0 +1,13 @@
+<h1>Blogs</h1>
+{% for category in categories %}
+<h2>{{ category.name }}</h2>
+<ul>
+    {% for blog in blogs|filter:category.blogs.all %}
+    <li>
+        <h3>{{ blog.title }}</h3>
+        <img src="{{ blog.image.url }}" alt="{{ blog.title }}">
+        <p>{{ blog.summary|truncatewords:15 }}</p>
+    </li>
+    {% endfor %}
+</ul>
+{% endfor %}
