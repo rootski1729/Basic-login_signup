@@ -13,12 +13,12 @@
         <p><strong>Created At:</strong> {{ blog.created_at|date:"F j, Y, g:i a" }}</p>
         <p><strong>Last Updated:</strong> {{ blog.updated_at|date:"F j, Y, g:i a" }}</p>
 
-        <a href="{% url 'create_blog' %}">
-            <button>Create New Blog</button>
-        </a>
-        <a href="{% url 'doctor_dashboard' %}">
-            <button>go to dashboard</button>
-
-        s
+       
     </div>
 {% endfor %}
+
+<a href="{% url 'create_blog' %}">
+    <button>Create New Blog</button>
+</a>
+<a href="{% url 'doctor_dashboard' %}">
+    <button>go to dashboard</button>
