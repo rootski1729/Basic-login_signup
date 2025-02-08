@@ -16,8 +16,10 @@ urlpatterns = [
     path('patient_blog/', patient_blogs_view,name='patient_blog'),
     path('doctors/', list_doctors,name='doctors'),
     path('book/<int:doctor_id>/', get_booking_page,name='book'),
-    path('book-appointment/<int:doctor_id>', book_appointment,name='book_appointment'),
+    path('book-appointment/<int:doctor_id>/', book_appointment,name='book_appointment'),
     path('appointment_success/<int:appointment_id>/', appointment_success,name='appointment_success'),
+    path('doctor_appointments/', get_appointments_doctor,name='doctor_appointments'),
+    path('patient_appointments/', get_appointments_patient,name='patient_appointments'),
 ]
 
 if settings.DEBUG:

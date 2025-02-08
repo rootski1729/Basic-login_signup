@@ -12,6 +12,7 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from django.conf import settings
 from django.urls import reverse
+import os
 
 
 # Create your views here.
@@ -137,23 +138,31 @@ def book_appointment(request,doctor_id):
     start_time = request.POST.get('start_time')
 
     if not doctor_id or not speciality or not date or not start_time:
-        messages.error(request, 'missing required fields')
-        return redirect('list_doctors')
+        return render(request, 'appointments/book_appointment.html', {'error': 'Missing required fields'})
 
     doctor=CustomUser.objects.get(id=doctor_id)
     if not doctor:
         messages.error(request, 'doctor not found')
         return redirect('list_doctors')
     
-    print(type(date), type(start_time))
     
     date_obj = datetime.strptime(date, "%Y-%m-%d").date()
     start_time_obj= datetime.strptime(start_time, "%H:%M").time()
-    print(date_obj, start_time_obj)
     
     startdatetime = datetime.combine(date_obj, start_time_obj)
     enddatetime = startdatetime + timedelta(minutes=45)
     end_time= enddatetime.time()
+    
+    if startdatetime < datetime.now():
+        messages.error(request, 'You cannot book an appointment in the past')
+        return redirect(reverse('book', kwargs={'doctor_id': doctor_id}))
+    
+    conflicts= Appointment.objects.filter(doctor=doctor, date=date_obj, start_time__lte=end_time, end_time__gte=start_time_obj)
+    
+    if conflicts:
+        messages.error(request, 'you already have schedule for that time')
+        return redirect(reverse('book', kwargs={'doctor_id': doctor_id}))
+
 
     appointment= Appointment.objects.create(
         patient=patient,
@@ -176,10 +185,32 @@ def book_appointment(request,doctor_id):
         'end': {'dateTime': enddatetime.isoformat(), 'timeZone': 'Asia/Kolkata'},
     }
 
-    service.events().insert(calendarId='rj8077911@gmail.com', body=event).execute()
+    service.events().insert(calendarId=os.getenv('calender_id'), body=event).execute()
 
     return redirect(reverse('appointment_success', kwargs={'appointment_id': appointment.id}))
 
 def appointment_success(request, appointment_id):
     appointment = Appointment.objects.get(id=appointment_id)
     return render(request, 'accounts/appointment_success.html', {'appointment': appointment})
+
+@login_required(login_url='login')
+def get_appointments_patient(request):
+    if request.user.user_type != 'patient':
+        messages.error(request, 'Access denied')
+        return redirect('login')
+    
+    user = request.user
+    appointments = Appointment.objects.filter(patient=user)
+    serializers= Appointmentserializer(appointments, many=True)
+    return render(request, 'accounts/appointments.html', {'appointments': serializers.data})
+
+@login_required(login_url='login')
+def get_appointments_doctor(request):
+    if request.user.user_type != 'doctor':
+        messages.error(request, 'Access denied')
+        return redirect('login')
+    
+    user = request.user
+    appointments = Appointment.objects.filter(doctor=user)
+    serializers= Appointmentserializer(appointments, many=True)
+    return render(request, 'accounts/appointments.html', {'appointments': serializers.data})
