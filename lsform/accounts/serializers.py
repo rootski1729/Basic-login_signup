@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CustomUser
+from .models import CustomUser, Appointment
 from django import forms
 
 class signupserializer(serializers.ModelSerializer):
@@ -22,8 +22,7 @@ class signupserializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         validated_data.pop('confirm_password')
-        user = CustomUser.objects.create_user(**validated_data)
-        return user
+        return CustomUser.objects.create_user(**validated_data)
         
         
         
@@ -48,4 +47,8 @@ class userserializer(serializers.ModelSerializer):
     class Meta:
         model=CustomUser
         fields='__all__'
-    
+        
+class Appointmentserializer(serializers.ModelSerializer):
+    class Meta:
+        model = Appointment
+        fields = '__all__'    

@@ -14,6 +14,10 @@ urlpatterns = [
     path('create_blog/', create_blog_view,name='create_blog'),
     path('doctors_blog/', doctor_blogs_view,name='doctors_blog'),
     path('patient_blog/', patient_blogs_view,name='patient_blog'),
+    path('doctors/', list_doctors,name='doctors'),
+    path('book/<int:doctor_id>/', get_booking_page,name='book'),
+    path('book-appointment/<int:doctor_id>', book_appointment,name='book_appointment'),
+    path('appointment_success/<int:appointment_id>/', appointment_success,name='appointment_success'),
 ]
 
 if settings.DEBUG:

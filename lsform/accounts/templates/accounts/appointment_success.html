@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Appointment Success</title>
+</head>
+<body>
+    <h2>Appointment Confirmed!</h2>
+
+    <p><strong>Doctor:</strong> {{ appointment.doctor.username }}</p>
+    <p><strong>Speciality:</strong> {{ appointment.speciality }}</p>
+    <p><strong>Date:</strong> {{ appointment.date }}</p>
+    <p><strong>Start Time:</strong> {{ appointment.start_time }}</p>
+    <p><strong>End Time:</strong> {{ appointment.end_time }}</p>
+
+    <a href="{% url 'doctors' %}"><button>Back to Doctors List</button></a>
+</body>
+</html>

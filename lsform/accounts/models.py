@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.conf import settings
+from datetime import timedelta, datetime
 
 type_user = (
     ('patient', 'Patient'),
@@ -43,3 +45,17 @@ class Blogpost(models.Model):
     
     def __str__(self):
         return self.title
+    
+    
+class Appointment(models.Model):
+    patient = models.ForeignKey(CustomUser, on_delete=models.CASCADE,related_name='patient')
+    doctor = models.ForeignKey(CustomUser, on_delete=models.CASCADE,related_name='doctor')
+    speciality = models.CharField(max_length=255)
+    date = models.DateField()
+    start_time = models.TimeField()
+    end_time = models.TimeField(editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+        
+    def __str__(self):
+        return f"Appointment with {self.doctor.username} on {self.date} at {self.start_time}"

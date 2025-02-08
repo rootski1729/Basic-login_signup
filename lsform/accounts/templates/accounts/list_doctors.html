@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Doctors List</title>
+</head>
+<body>
+    <h2>Available Doctors</h2>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <ul>
+        {% for doctor in doctors %}
+            <li>
+                <img src="{{ doctor.profile_pic.url }}" width="50" alt="Doctor Picture">
+                {{ doctor.username }}
+                <a href="{% url 'book' doctor.id %}">
+                    <button>Book Appointment</button>
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

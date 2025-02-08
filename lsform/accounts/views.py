@@ -8,6 +8,12 @@ from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth import logout
 from .forms import *
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from django.conf import settings
+from django.urls import reverse
+
+
 # Create your views here.
 
     
@@ -107,3 +113,73 @@ def patient_blogs_view(request):
     blogs_by_category = {category: Blogpost.objects.filter(category=category, status='published') for category in categories}
 
     return render(request, 'accounts/patient_blogs.html', {'blogs_by_category': blogs_by_category})
+
+@login_required(login_url='login')
+def list_doctors(request):
+    doctors = CustomUser.objects.filter(user_type='doctor')
+    return render(request, 'accounts/list_doctors.html', {'doctors': doctors})
+
+@login_required(login_url='login')
+def get_booking_page(request, doctor_id):
+    doctor = CustomUser.objects.get(id=doctor_id)
+    if not doctor:
+        messages.error(request, 'doctor not found')
+        return redirect('list_doctors')
+    return render(request, 'accounts/book_appointment.html', {'doctor': doctor})
+
+@login_required(login_url='login')
+def book_appointment(request,doctor_id):
+    if request.method != 'POST':
+        return redirect('list_doctors')
+    patient = request.user
+    speciality = request.POST.get('speciality')
+    date= request.POST.get('date')
+    start_time = request.POST.get('start_time')
+
+    if not doctor_id or not speciality or not date or not start_time:
+        messages.error(request, 'missing required fields')
+        return redirect('list_doctors')
+
+    doctor=CustomUser.objects.get(id=doctor_id)
+    if not doctor:
+        messages.error(request, 'doctor not found')
+        return redirect('list_doctors')
+    
+    print(type(date), type(start_time))
+    
+    date_obj = datetime.strptime(date, "%Y-%m-%d").date()
+    start_time_obj= datetime.strptime(start_time, "%H:%M").time()
+    print(date_obj, start_time_obj)
+    
+    startdatetime = datetime.combine(date_obj, start_time_obj)
+    enddatetime = startdatetime + timedelta(minutes=45)
+    end_time= enddatetime.time()
+
+    appointment= Appointment.objects.create(
+        patient=patient,
+        doctor=doctor,
+        speciality=speciality,
+        date=date_obj,
+        start_time=start_time_obj,  
+        end_time=end_time
+    )
+
+    credentials = service_account.Credentials.from_service_account_file(
+        settings.GOOGLE_CREDENTIALS_FILE,
+        scopes=['https://www.googleapis.com/auth/calendar'])
+
+    service= build('calendar', 'v3', credentials=credentials)
+    event= {
+        'summary': f'Appointment with {doctor.username}',
+        'description': f'Appointment with {doctor.username} for {speciality}',
+        'start': {'dateTime': startdatetime.isoformat(), 'timeZone': 'Asia/Kolkata'},
+        'end': {'dateTime': enddatetime.isoformat(), 'timeZone': 'Asia/Kolkata'},
+    }
+
+    service.events().insert(calendarId='rj8077911@gmail.com', body=event).execute()
+
+    return redirect(reverse('appointment_success', kwargs={'appointment_id': appointment.id}))
+
+def appointment_success(request, appointment_id):
+    appointment = Appointment.objects.get(id=appointment_id)
+    return render(request, 'accounts/appointment_success.html', {'appointment': appointment})
